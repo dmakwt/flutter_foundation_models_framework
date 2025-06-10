@@ -28,7 +28,7 @@ void main() {
         errorMessage: null,
       );
       expect(availability.isAvailable, true);
-      expect(availability.osVersion, '18.1');
+      expect(availability.osVersion, '26.0');
       expect(availability.errorMessage, null);
     });
   });
