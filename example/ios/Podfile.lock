@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - foundation_models_framework (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - foundation_models_framework (from `.symlinks/plugins/foundation_models_framework/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  foundation_models_framework:
+    :path: ".symlinks/plugins/foundation_models_framework/ios"
+
+SPEC CHECKSUMS:
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  foundation_models_framework: f4ab27cc1b93e39802b9421b8c28b38a79a2e552
+
+PODFILE CHECKSUM: 915e58fd71f05ae99fabdd8ac2991c68108b3464
+
+COCOAPODS: 1.16.2
