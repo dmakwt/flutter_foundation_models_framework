@@ -24,7 +24,7 @@ void main() {
       // Test AvailabilityResponse
       final availability = AvailabilityResponse(
         isAvailable: true,
-        osVersion: '18.1',
+        osVersion: '26.0',
         errorMessage: null,
       );
       expect(availability.isAvailable, true);
