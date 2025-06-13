@@ -1,6 +1,6 @@
 name: foundation_models_framework
-description: A Flutter package for integrating with Apple's Foundation Models framework on iOS devices. Provides text summarization, embedding generation, and Apple Intelligence features.
-version: 0.0.1
+description: A Flutter package for integrating with Apple's Foundation Models framework on iOS devices. Provides session-based language model interactions and Apple Intelligence features.
+version: 0.1.0
 homepage: https://github.com/dmakwt/flutter_foundation_models_framework
 repository: https://github.com/dmakwt/flutter_foundation_models_framework
 issue_tracker: https://github.com/dmakwt/flutter_foundation_models_framework/issues
@@ -9,8 +9,8 @@ documentation: https://github.com/dmakwt/flutter_foundation_models_framework#rea
 topics:
   - apple-intelligence
   - foundation-models
-  - text-summarization
-  - embeddings
+  - language-models
+  - sessions
   - ios
 
 environment:

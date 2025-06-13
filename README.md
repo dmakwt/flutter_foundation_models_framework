@@ -40,7 +40,7 @@ Add this package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  foundation_models_framework: ^0.0.1
+  foundation_models_framework: ^0.1.0
 ```
 
 Then run:
@@ -291,8 +291,6 @@ For issues and questions:
 This package implementation is based on Apple's Foundation Models framework:
 
 - **[Apple Developer Documentation](https://developer.apple.com/documentation/foundationmodels)**: Official API reference
-- **[Apple Intelligence](https://www.apple.com/apple-intelligence/)**: Overview of Apple Intelligence features
-
 ---
 
 **Important**: This package integrates with Apple's Foundation Models framework. Ensure you comply with Apple's terms of service and review their documentation for production use.
