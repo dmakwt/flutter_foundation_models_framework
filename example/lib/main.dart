@@ -31,10 +31,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController _textController = TextEditingController();
+  final TextEditingController _promptController = TextEditingController();
+  final List<Message> _messages = [];
+  LanguageModelSession? _session;
   String _status = 'Not checked';
-  String _summary = '';
-  List<double> _embedding = [];
   bool _isLoading = false;
 
   @override
@@ -68,53 +68,35 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> _summarizeText() async {
-    if (_textController.text.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter some text to summarize')),
-        );
-      }
-      return;
-    }
-
+  Future<void> _createSession() async {
     setState(() {
-      _isLoading = true;
-      _summary = 'Generating summary...';
-    });
-
-    try {
-      final response = await FoundationModelsFramework.instance.summarizeText(
-        _textController.text,
-        maxLength: 100,
-        style: 'brief',
+      _session = FoundationModelsFramework.instance.createSession();
+      _messages.clear();
+      _messages.add(
+        Message(
+          content: 'New session created. You can now send prompts!',
+          isUser: false,
+          isSystem: true,
+        ),
       );
-      setState(() {
-        _summary = response.summary;
-      });
-    } catch (e) {
-      setState(() {
-        _summary = 'Error: $e';
-      });
+    });
+  }
+
+  Future<void> _sendPrompt() async {
+    final prompt = _promptController.text.trim();
+    if (prompt.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Summarization failed: $e')));
+        ).showSnackBar(const SnackBar(content: Text('Please enter a prompt')));
       }
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      return;
     }
-  }
 
-  Future<void> _generateEmbedding() async {
-    if (_textController.text.isEmpty) {
+    if (_session == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please enter some text to generate embeddings'),
-          ),
+          const SnackBar(content: Text('Please create a session first')),
         );
       }
       return;
@@ -122,21 +104,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
     setState(() {
       _isLoading = true;
-      _embedding = [];
+      _messages.add(Message(content: prompt, isUser: true));
+      _promptController.clear();
     });
 
     try {
-      final response = await FoundationModelsFramework.instance
-          .generateEmbedding(_textController.text);
+      final response = await _session!.respond(prompt: prompt);
+
       setState(() {
-        _embedding = response.embedding;
+        if (response.errorMessage != null) {
+          _messages.add(
+            Message(
+              content: 'Error: ${response.errorMessage}',
+              isUser: false,
+              isError: true,
+            ),
+          );
+        } else {
+          _messages.add(Message(content: response.content, isUser: false));
+        }
       });
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Embedding generation failed: $e')),
+      setState(() {
+        _messages.add(
+          Message(content: 'Error: $e', isUser: false, isError: true),
         );
-      }
+      });
     } finally {
       setState(() {
         _isLoading = false;
@@ -151,138 +144,191 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Foundation Models Status',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(_status),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _checkAvailability,
-                      child: const Text('Refresh Status'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Text Input',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _textController,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        hintText:
-                            'Enter text to summarize or generate embeddings...',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _summarizeText,
-                            child: const Text('Summarize'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _generateEmbedding,
-                            child: const Text('Generate Embedding'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (_summary.isNotEmpty)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Summary',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(_summary),
-                    ],
+      body: Column(
+        children: [
+          // Status Card
+          Card(
+            margin: const EdgeInsets.all(16.0),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Foundation Models Status',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ),
-            if (_embedding.isNotEmpty)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 8),
+                  Text(_status),
+                  const SizedBox(height: 8),
+                  Row(
                     children: [
-                      Text(
-                        'Embedding (${_embedding.length} dimensions)',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _checkAvailability,
+                        child: const Text('Refresh Status'),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'First 10 values: ${_embedding.take(10).map((e) => e.toStringAsFixed(4)).join(', ')}...',
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _createSession,
+                        child: Text(
+                          _session == null ? 'Create Session' : 'New Session',
+                        ),
                       ),
                     ],
                   ),
+                ],
+              ),
+            ),
+          ),
+
+          // Messages List
+          Expanded(
+            child: _messages.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Create a session to start chatting with Foundation Models',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
+                      return MessageBubble(message: message);
+                    },
+                  ),
+          ),
+
+          // Input Field
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              border: Border(top: BorderSide(color: Colors.grey.shade300)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _promptController,
+                    decoration: const InputDecoration(
+                      hintText: 'Enter your prompt...',
+                      border: OutlineInputBorder(),
+                    ),
+                    onSubmitted: (_) => _sendPrompt(),
+                    enabled: !_isLoading && _session != null,
+                  ),
                 ),
-              ),
-            if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-          ],
-        ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _isLoading || _session == null
+                      ? null
+                      : _sendPrompt,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Send'),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   @override
   void dispose() {
-    _textController.dispose();
+    _promptController.dispose();
     super.dispose();
+  }
+}
+
+class Message {
+  final String content;
+  final bool isUser;
+  final bool isSystem;
+  final bool isError;
+
+  Message({
+    required this.content,
+    required this.isUser,
+    this.isSystem = false,
+    this.isError = false,
+  });
+}
+
+class MessageBubble extends StatelessWidget {
+  final Message message;
+
+  const MessageBubble({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: message.isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        children: [
+          if (!message.isUser) ...[
+            CircleAvatar(
+              backgroundColor: message.isSystem
+                  ? Colors.blue
+                  : message.isError
+                  ? Colors.red
+                  : Colors.green,
+              child: Icon(
+                message.isSystem
+                    ? Icons.info
+                    : message.isError
+                    ? Icons.error
+                    : Icons.smart_toy,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 10.0,
+              ),
+              decoration: BoxDecoration(
+                color: message.isUser
+                    ? Theme.of(context).primaryColor
+                    : message.isSystem
+                    ? Colors.blue.shade100
+                    : message.isError
+                    ? Colors.red.shade100
+                    : Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              child: Text(
+                message.content,
+                style: TextStyle(
+                  color: message.isUser ? Colors.white : Colors.black87,
+                ),
+              ),
+            ),
+          ),
+          if (message.isUser) ...[
+            const SizedBox(width: 8),
+            CircleAvatar(
+              backgroundColor: Theme.of(context).primaryColor,
+              child: const Icon(Icons.person, color: Colors.white, size: 16),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

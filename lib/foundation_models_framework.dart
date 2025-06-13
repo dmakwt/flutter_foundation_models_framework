@@ -3,10 +3,51 @@ export 'src/foundation_models_api.g.dart';
 import 'src/foundation_models_api.g.dart';
 import 'dart:io' show Platform;
 
+/// A language model session for interacting with Apple's Foundation Models framework.
+///
+/// This class provides a session-based interface for sending prompts and receiving
+/// responses from Apple's on-device language models.
+class LanguageModelSession {
+  final FoundationModelsApi _api = FoundationModelsApi();
+  final bool _isMock;
+
+  /// Create a new language model session.
+  LanguageModelSession() : _isMock = false;
+
+  /// Create a mock session for testing in simulators or development.
+  ///
+  /// This is useful when you want to test your app's UI and logic
+  /// without requiring actual Foundation Models framework availability.
+  LanguageModelSession._mock() : _isMock = true;
+
+  /// Create a mock instance for testing in simulators or development
+  factory LanguageModelSession.mock() {
+    return LanguageModelSession._mock();
+  }
+
+  /// Send a prompt to the language model and get a response.
+  ///
+  /// [prompt] - The text prompt to send to the model
+  ///
+  /// Returns a [ChatResponse] with the model's response content or error message.
+  Future<ChatResponse> respond({required String prompt}) async {
+    if (_isMock) {
+      // Mock response for testing
+      return ChatResponse(
+        content: 'Mock response to: $prompt',
+        errorMessage: null,
+      );
+    }
+
+    final request = ChatRequest(prompt: prompt);
+    return await _api.sendPrompt(request);
+  }
+}
+
 /// Main class for interacting with Apple's Foundation Models framework.
 ///
-/// This class provides a high-level interface for text summarization,
-/// embedding generation, and other Foundation Models capabilities.
+/// This class provides a high-level interface for checking availability
+/// and creating language model sessions.
 class FoundationModelsFramework {
   static final FoundationModelsFramework _instance =
       FoundationModelsFramework._internal();
@@ -30,6 +71,8 @@ class FoundationModelsFramework {
   ///
   /// Returns an [AvailabilityResponse] containing availability status,
   /// OS version, and any error messages.
+  ///
+  /// Returns true only if the iOS version is 26 or later and Apple Intelligence is available.
   Future<AvailabilityResponse> checkAvailability() async {
     if (_isMock) {
       // Mock response for simulator/testing
@@ -37,95 +80,32 @@ class FoundationModelsFramework {
         isAvailable: false,
         osVersion: Platform.operatingSystemVersion,
         errorMessage:
-            'Mock implementation - Foundation Models requires physical device with iOS 26.0+ Beta',
+            'Mock implementation - Foundation Models requires physical device with iOS 26.0+ and Apple Intelligence',
       );
     }
     return await _api.checkAvailability();
   }
 
-  /// Summarize the given text using Foundation Models.
+  /// Create a new language model session.
   ///
-  /// [text] - The text to summarize
-  /// [maxLength] - Optional maximum length for the summary
-  /// [style] - Optional summarization style ('brief', 'detailed', 'keyword')
-  ///
-  /// Returns a [SummarizationResponse] with the summary and metadata.
-  Future<SummarizationResponse> summarizeText(
-    String text, {
-    int? maxLength,
-    String? style,
-  }) async {
+  /// Returns a [LanguageModelSession] that can be used to send prompts
+  /// and receive responses from Apple's Foundation Models.
+  LanguageModelSession createSession() {
     if (_isMock) {
-      // Mock summarization for testing
-      final mockSummary = _createMockSummary(text, maxLength, style);
-      return SummarizationResponse(
-        summary: mockSummary,
-        originalLength: text.length,
-        summaryLength: mockSummary.length,
-      );
+      return LanguageModelSession.mock();
     }
-
-    final request = SummarizationRequest(
-      text: text,
-      maxLength: maxLength,
-      style: style,
-    );
-    return await _api.summarizeText(request);
+    return LanguageModelSession();
   }
 
-  /// Generate text embeddings using Foundation Models.
+  /// Convenience method to send a single prompt without managing a session.
   ///
-  /// [text] - The text to generate embeddings for
-  /// [model] - Optional model specification
+  /// [prompt] - The text prompt to send to the model
   ///
-  /// Returns an [EmbeddingResponse] with the embedding vector and dimensions.
-  Future<EmbeddingResponse> generateEmbedding(
-    String text, {
-    String? model,
-  }) async {
-    if (_isMock) {
-      // Mock embedding generation for testing
-      final mockEmbedding = _createMockEmbedding(text);
-      return EmbeddingResponse(
-        embedding: mockEmbedding,
-        dimensions: mockEmbedding.length,
-      );
-    }
-
-    final request = EmbeddingRequest(text: text, model: model);
-    return await _api.generateEmbedding(request);
-  }
-
-  // Mock implementation helpers
-  String _createMockSummary(String text, int? maxLength, String? style) {
-    final words = text.split(' ');
-    final targetLength = maxLength ?? (words.length ~/ 3).clamp(1, 50);
-
-    String summary;
-    if (words.length <= targetLength) {
-      summary = text;
-    } else {
-      summary = words.take(targetLength).join(' ');
-      if (style?.toLowerCase() == 'keyword') {
-        summary = 'Keywords: ${words.take(5).join(', ')}';
-      }
-    }
-
-    return '$summary (Mock Summary)';
-  }
-
-  List<double> _createMockEmbedding(String text) {
-    // Generate consistent mock embedding based on text hash
-    final hash = text.hashCode;
-    final dimensions = 768; // Standard embedding dimension
-    final embedding = <double>[];
-
-    for (int i = 0; i < dimensions; i++) {
-      final value =
-          ((hash + i) % 1000) / 1000.0 - 0.5; // Values between -0.5 and 0.5
-      embedding.add(value);
-    }
-
-    return embedding;
+  /// Returns a [ChatResponse] with the model's response content or error message.
+  ///
+  /// For multiple interactions, consider using [createSession] instead for better performance.
+  Future<ChatResponse> sendPrompt(String prompt) async {
+    final session = createSession();
+    return await session.respond(prompt: prompt);
   }
 }

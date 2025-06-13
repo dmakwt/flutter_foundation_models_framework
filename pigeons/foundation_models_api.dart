@@ -7,42 +7,19 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'foundation_models_framework',
   ),
 )
-/// Data class for text summarization request
-class SummarizationRequest {
-  const SummarizationRequest({required this.text, this.maxLength, this.style});
+/// Data class for chat request
+class ChatRequest {
+  const ChatRequest({required this.prompt});
 
-  final String text;
-  final int? maxLength;
-  final String? style; // 'brief', 'detailed', 'keyword'
+  final String prompt;
 }
 
-/// Data class for text summarization response
-class SummarizationResponse {
-  const SummarizationResponse({
-    required this.summary,
-    required this.originalLength,
-    required this.summaryLength,
-  });
+/// Data class for chat response
+class ChatResponse {
+  const ChatResponse({required this.content, this.errorMessage});
 
-  final String summary;
-  final int originalLength;
-  final int summaryLength;
-}
-
-/// Data class for text embedding request
-class EmbeddingRequest {
-  const EmbeddingRequest({required this.text, this.model});
-
-  final String text;
-  final String? model; // Optional model specification
-}
-
-/// Data class for text embedding response
-class EmbeddingResponse {
-  const EmbeddingResponse({required this.embedding, required this.dimensions});
-
-  final List<double> embedding;
-  final int dimensions;
+  final String content;
+  final String? errorMessage;
 }
 
 /// Data class for availability check response
@@ -65,11 +42,7 @@ abstract class FoundationModelsApi {
   @async
   AvailabilityResponse checkAvailability();
 
-  /// Summarize the given text using Foundation Models
+  /// Create a new language model session and send a prompt
   @async
-  SummarizationResponse summarizeText(SummarizationRequest request);
-
-  /// Generate text embeddings using Foundation Models
-  @async
-  EmbeddingResponse generateEmbedding(EmbeddingRequest request);
+  ChatResponse sendPrompt(ChatRequest request);
 }

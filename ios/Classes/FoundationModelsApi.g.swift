@@ -128,132 +128,58 @@ func deepHashFoundationModelsApi(value: Any?, hasher: inout Hasher) {
 
     
 
-/// Data class for text summarization request
+/// Data class for chat request
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct SummarizationRequest: Hashable {
-  var text: String
-  var maxLength: Int64? = nil
-  var style: String? = nil
+struct ChatRequest: Hashable {
+  var prompt: String
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> SummarizationRequest? {
-    let text = pigeonVar_list[0] as! String
-    let maxLength: Int64? = nilOrValue(pigeonVar_list[1])
-    let style: String? = nilOrValue(pigeonVar_list[2])
+  static func fromList(_ pigeonVar_list: [Any?]) -> ChatRequest? {
+    let prompt = pigeonVar_list[0] as! String
 
-    return SummarizationRequest(
-      text: text,
-      maxLength: maxLength,
-      style: style
+    return ChatRequest(
+      prompt: prompt
     )
   }
   func toList() -> [Any?] {
     return [
-      text,
-      maxLength,
-      style,
+      prompt
     ]
   }
-  static func == (lhs: SummarizationRequest, rhs: SummarizationRequest) -> Bool {
+  static func == (lhs: ChatRequest, rhs: ChatRequest) -> Bool {
     return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
   }
 }
 
-/// Data class for text summarization response
+/// Data class for chat response
 ///
 /// Generated class from Pigeon that represents data sent in messages.
-struct SummarizationResponse: Hashable {
-  var summary: String
-  var originalLength: Int64
-  var summaryLength: Int64
+struct ChatResponse: Hashable {
+  var content: String
+  var errorMessage: String? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> SummarizationResponse? {
-    let summary = pigeonVar_list[0] as! String
-    let originalLength = pigeonVar_list[1] as! Int64
-    let summaryLength = pigeonVar_list[2] as! Int64
+  static func fromList(_ pigeonVar_list: [Any?]) -> ChatResponse? {
+    let content = pigeonVar_list[0] as! String
+    let errorMessage: String? = nilOrValue(pigeonVar_list[1])
 
-    return SummarizationResponse(
-      summary: summary,
-      originalLength: originalLength,
-      summaryLength: summaryLength
+    return ChatResponse(
+      content: content,
+      errorMessage: errorMessage
     )
   }
   func toList() -> [Any?] {
     return [
-      summary,
-      originalLength,
-      summaryLength,
+      content,
+      errorMessage,
     ]
   }
-  static func == (lhs: SummarizationResponse, rhs: SummarizationResponse) -> Bool {
-    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())  }
-  func hash(into hasher: inout Hasher) {
-    deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
-  }
-}
-
-/// Data class for text embedding request
-///
-/// Generated class from Pigeon that represents data sent in messages.
-struct EmbeddingRequest: Hashable {
-  var text: String
-  var model: String? = nil
-
-
-  // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> EmbeddingRequest? {
-    let text = pigeonVar_list[0] as! String
-    let model: String? = nilOrValue(pigeonVar_list[1])
-
-    return EmbeddingRequest(
-      text: text,
-      model: model
-    )
-  }
-  func toList() -> [Any?] {
-    return [
-      text,
-      model,
-    ]
-  }
-  static func == (lhs: EmbeddingRequest, rhs: EmbeddingRequest) -> Bool {
-    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())  }
-  func hash(into hasher: inout Hasher) {
-    deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
-  }
-}
-
-/// Data class for text embedding response
-///
-/// Generated class from Pigeon that represents data sent in messages.
-struct EmbeddingResponse: Hashable {
-  var embedding: [Double]
-  var dimensions: Int64
-
-
-  // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> EmbeddingResponse? {
-    let embedding = pigeonVar_list[0] as! [Double]
-    let dimensions = pigeonVar_list[1] as! Int64
-
-    return EmbeddingResponse(
-      embedding: embedding,
-      dimensions: dimensions
-    )
-  }
-  func toList() -> [Any?] {
-    return [
-      embedding,
-      dimensions,
-    ]
-  }
-  static func == (lhs: EmbeddingResponse, rhs: EmbeddingResponse) -> Bool {
+  static func == (lhs: ChatResponse, rhs: ChatResponse) -> Bool {
     return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())  }
   func hash(into hasher: inout Hasher) {
     deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
@@ -299,14 +225,10 @@ private class FoundationModelsApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
-      return SummarizationRequest.fromList(self.readValue() as! [Any?])
+      return ChatRequest.fromList(self.readValue() as! [Any?])
     case 130:
-      return SummarizationResponse.fromList(self.readValue() as! [Any?])
+      return ChatResponse.fromList(self.readValue() as! [Any?])
     case 131:
-      return EmbeddingRequest.fromList(self.readValue() as! [Any?])
-    case 132:
-      return EmbeddingResponse.fromList(self.readValue() as! [Any?])
-    case 133:
       return AvailabilityResponse.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -316,20 +238,14 @@ private class FoundationModelsApiPigeonCodecReader: FlutterStandardReader {
 
 private class FoundationModelsApiPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? SummarizationRequest {
+    if let value = value as? ChatRequest {
       super.writeByte(129)
       super.writeValue(value.toList())
-    } else if let value = value as? SummarizationResponse {
+    } else if let value = value as? ChatResponse {
       super.writeByte(130)
       super.writeValue(value.toList())
-    } else if let value = value as? EmbeddingRequest {
-      super.writeByte(131)
-      super.writeValue(value.toList())
-    } else if let value = value as? EmbeddingResponse {
-      super.writeByte(132)
-      super.writeValue(value.toList())
     } else if let value = value as? AvailabilityResponse {
-      super.writeByte(133)
+      super.writeByte(131)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -358,10 +274,8 @@ class FoundationModelsApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Se
 protocol FoundationModelsApi {
   /// Check if Foundation Models framework is available on the device
   func checkAvailability(completion: @escaping (Result<AvailabilityResponse, Error>) -> Void)
-  /// Summarize the given text using Foundation Models
-  func summarizeText(request: SummarizationRequest, completion: @escaping (Result<SummarizationResponse, Error>) -> Void)
-  /// Generate text embeddings using Foundation Models
-  func generateEmbedding(request: EmbeddingRequest, completion: @escaping (Result<EmbeddingResponse, Error>) -> Void)
+  /// Create a new language model session and send a prompt
+  func sendPrompt(request: ChatRequest, completion: @escaping (Result<ChatResponse, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -386,13 +300,13 @@ class FoundationModelsApiSetup {
     } else {
       checkAvailabilityChannel.setMessageHandler(nil)
     }
-    /// Summarize the given text using Foundation Models
-    let summarizeTextChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.summarizeText\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Create a new language model session and send a prompt
+    let sendPromptChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.sendPrompt\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      summarizeTextChannel.setMessageHandler { message, reply in
+      sendPromptChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let requestArg = args[0] as! SummarizationRequest
-        api.summarizeText(request: requestArg) { result in
+        let requestArg = args[0] as! ChatRequest
+        api.sendPrompt(request: requestArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -402,25 +316,7 @@ class FoundationModelsApiSetup {
         }
       }
     } else {
-      summarizeTextChannel.setMessageHandler(nil)
-    }
-    /// Generate text embeddings using Foundation Models
-    let generateEmbeddingChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.generateEmbedding\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      generateEmbeddingChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let requestArg = args[0] as! EmbeddingRequest
-        api.generateEmbedding(request: requestArg) { result in
-          switch result {
-          case .success(let res):
-            reply(wrapResult(res))
-          case .failure(let error):
-            reply(wrapError(error))
-          }
-        }
-      }
-    } else {
-      generateEmbeddingChannel.setMessageHandler(nil)
+      sendPromptChannel.setMessageHandler(nil)
     }
   }
 }

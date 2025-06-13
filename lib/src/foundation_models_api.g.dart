@@ -29,44 +29,34 @@ bool _deepEquals(Object? a, Object? b) {
 }
 
 
-/// Data class for text summarization request
-class SummarizationRequest {
-  SummarizationRequest({
-    required this.text,
-    this.maxLength,
-    this.style,
+/// Data class for chat request
+class ChatRequest {
+  ChatRequest({
+    required this.prompt,
   });
 
-  String text;
-
-  int? maxLength;
-
-  String? style;
+  String prompt;
 
   List<Object?> _toList() {
     return <Object?>[
-      text,
-      maxLength,
-      style,
+      prompt,
     ];
   }
 
   Object encode() {
     return _toList();  }
 
-  static SummarizationRequest decode(Object result) {
+  static ChatRequest decode(Object result) {
     result as List<Object?>;
-    return SummarizationRequest(
-      text: result[0]! as String,
-      maxLength: result[1] as int?,
-      style: result[2] as String?,
+    return ChatRequest(
+      prompt: result[0]! as String,
     );
   }
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! SummarizationRequest || other.runtimeType != runtimeType) {
+    if (other is! ChatRequest || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
@@ -81,138 +71,39 @@ class SummarizationRequest {
 ;
 }
 
-/// Data class for text summarization response
-class SummarizationResponse {
-  SummarizationResponse({
-    required this.summary,
-    required this.originalLength,
-    required this.summaryLength,
+/// Data class for chat response
+class ChatResponse {
+  ChatResponse({
+    required this.content,
+    this.errorMessage,
   });
 
-  String summary;
+  String content;
 
-  int originalLength;
-
-  int summaryLength;
+  String? errorMessage;
 
   List<Object?> _toList() {
     return <Object?>[
-      summary,
-      originalLength,
-      summaryLength,
+      content,
+      errorMessage,
     ];
   }
 
   Object encode() {
     return _toList();  }
 
-  static SummarizationResponse decode(Object result) {
+  static ChatResponse decode(Object result) {
     result as List<Object?>;
-    return SummarizationResponse(
-      summary: result[0]! as String,
-      originalLength: result[1]! as int,
-      summaryLength: result[2]! as int,
+    return ChatResponse(
+      content: result[0]! as String,
+      errorMessage: result[1] as String?,
     );
   }
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
   bool operator ==(Object other) {
-    if (other is! SummarizationResponse || other.runtimeType != runtimeType) {
-      return false;
-    }
-    if (identical(this, other)) {
-      return true;
-    }
-    return _deepEquals(encode(), other.encode());
-  }
-
-  @override
-  // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
-}
-
-/// Data class for text embedding request
-class EmbeddingRequest {
-  EmbeddingRequest({
-    required this.text,
-    this.model,
-  });
-
-  String text;
-
-  String? model;
-
-  List<Object?> _toList() {
-    return <Object?>[
-      text,
-      model,
-    ];
-  }
-
-  Object encode() {
-    return _toList();  }
-
-  static EmbeddingRequest decode(Object result) {
-    result as List<Object?>;
-    return EmbeddingRequest(
-      text: result[0]! as String,
-      model: result[1] as String?,
-    );
-  }
-
-  @override
-  // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  bool operator ==(Object other) {
-    if (other is! EmbeddingRequest || other.runtimeType != runtimeType) {
-      return false;
-    }
-    if (identical(this, other)) {
-      return true;
-    }
-    return _deepEquals(encode(), other.encode());
-  }
-
-  @override
-  // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
-}
-
-/// Data class for text embedding response
-class EmbeddingResponse {
-  EmbeddingResponse({
-    required this.embedding,
-    required this.dimensions,
-  });
-
-  List<double> embedding;
-
-  int dimensions;
-
-  List<Object?> _toList() {
-    return <Object?>[
-      embedding,
-      dimensions,
-    ];
-  }
-
-  Object encode() {
-    return _toList();  }
-
-  static EmbeddingResponse decode(Object result) {
-    result as List<Object?>;
-    return EmbeddingResponse(
-      embedding: (result[0] as List<Object?>?)!.cast<double>(),
-      dimensions: result[1]! as int,
-    );
-  }
-
-  @override
-  // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  bool operator ==(Object other) {
-    if (other is! EmbeddingResponse || other.runtimeType != runtimeType) {
+    if (other is! ChatResponse || other.runtimeType != runtimeType) {
       return false;
     }
     if (identical(this, other)) {
@@ -287,20 +178,14 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is SummarizationRequest) {
+    }    else if (value is ChatRequest) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    }    else if (value is SummarizationResponse) {
+    }    else if (value is ChatResponse) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    }    else if (value is EmbeddingRequest) {
-      buffer.putUint8(131);
-      writeValue(buffer, value.encode());
-    }    else if (value is EmbeddingResponse) {
-      buffer.putUint8(132);
-      writeValue(buffer, value.encode());
     }    else if (value is AvailabilityResponse) {
-      buffer.putUint8(133);
+      buffer.putUint8(131);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -311,14 +196,10 @@ class _PigeonCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 129: 
-        return SummarizationRequest.decode(readValue(buffer)!);
+        return ChatRequest.decode(readValue(buffer)!);
       case 130: 
-        return SummarizationResponse.decode(readValue(buffer)!);
+        return ChatResponse.decode(readValue(buffer)!);
       case 131: 
-        return EmbeddingRequest.decode(readValue(buffer)!);
-      case 132: 
-        return EmbeddingResponse.decode(readValue(buffer)!);
-      case 133: 
         return AvailabilityResponse.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -369,9 +250,9 @@ class FoundationModelsApi {
     }
   }
 
-  /// Summarize the given text using Foundation Models
-  Future<SummarizationResponse> summarizeText(SummarizationRequest request) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.summarizeText$pigeonVar_messageChannelSuffix';
+  /// Create a new language model session and send a prompt
+  Future<ChatResponse> sendPrompt(ChatRequest request) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.sendPrompt$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -394,36 +275,7 @@ class FoundationModelsApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (pigeonVar_replyList[0] as SummarizationResponse?)!;
-    }
-  }
-
-  /// Generate text embeddings using Foundation Models
-  Future<EmbeddingResponse> generateEmbedding(EmbeddingRequest request) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.generateEmbedding$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-      pigeonVar_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: pigeonVar_binaryMessenger,
-    );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[request]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
-    if (pigeonVar_replyList == null) {
-      throw _createConnectionError(pigeonVar_channelName);
-    } else if (pigeonVar_replyList.length > 1) {
-      throw PlatformException(
-        code: pigeonVar_replyList[0]! as String,
-        message: pigeonVar_replyList[1] as String?,
-        details: pigeonVar_replyList[2],
-      );
-    } else if (pigeonVar_replyList[0] == null) {
-      throw PlatformException(
-        code: 'null-error',
-        message: 'Host platform returned null value for non-null return value.',
-      );
-    } else {
-      return (pigeonVar_replyList[0] as EmbeddingResponse?)!;
+      return (pigeonVar_replyList[0] as ChatResponse?)!;
     }
   }
 }
