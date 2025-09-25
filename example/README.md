@@ -1,16 +1,66 @@
-# foundation_models_framework_example
+# Foundation Models Framework Example
 
-A new Flutter project.
+A complete example app demonstrating the Flutter Foundation Models Framework integration with Apple's on-device AI.
+
+## Features Demonstrated
+
+- ✅ Availability checking for Apple Intelligence
+- ✅ Session creation and management
+- ✅ Prompt-response interactions
+- ✅ Streaming responses with real-time token updates
+- ✅ Generation options configuration
+- ✅ Guardrail level settings
+- ✅ Error handling and recovery
+- ✅ Multi-turn conversations with context
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
 
-A few resources to get you started if this is your first Flutter project:
+- iOS 26.0+ or macOS 15.0+ (with Apple Intelligence enabled)
+- Xcode 16.0+
+- Physical device (simulator uses mock responses)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Running the Example
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+cd example
+flutter run
+```
+
+## Usage Examples
+
+The example app includes:
+
+1. **Status Check**: Verify Foundation Models availability
+2. **Session Management**: Create and reuse sessions
+3. **Chat Interface**: Interactive conversation UI
+4. **Streaming Demo**: Real-time token streaming display
+5. **Options Panel**: Configure generation parameters
+
+## Key Code Examples
+
+### Basic Response
+```dart
+final response = await session.respond(prompt: 'Hello!');
+print(response.content);
+```
+
+### Streaming
+```dart
+final stream = session.streamResponse(prompt: 'Tell me a story');
+await for (final chunk in stream) {
+  print('New tokens: ${chunk.delta}');
+}
+```
+
+### With Options
+```dart
+final response = await session.respond(
+  prompt: 'Explain quantum physics',
+  options: GenerationOptionsRequest(
+    temperature: 0.7,
+    maximumResponseTokens: 500,
+  ),
+);
+```

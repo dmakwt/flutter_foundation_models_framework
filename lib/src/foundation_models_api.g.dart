@@ -29,27 +29,96 @@ bool _deepEquals(Object? a, Object? b) {
 }
 
 
-/// Data class for chat request
-class ChatRequest {
-  ChatRequest({
-    required this.prompt,
+class GenerationOptionsRequest {
+  GenerationOptionsRequest({
+    this.temperature,
+    this.maximumResponseTokens,
+    this.samplingTopK,
+    this.samplingProbabilityThreshold,
   });
 
-  String prompt;
+  double? temperature;
+
+  int? maximumResponseTokens;
+
+  int? samplingTopK;
+
+  double? samplingProbabilityThreshold;
 
   List<Object?> _toList() {
     return <Object?>[
-      prompt,
+      temperature,
+      maximumResponseTokens,
+      samplingTopK,
+      samplingProbabilityThreshold,
     ];
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
+
+  static GenerationOptionsRequest decode(Object result) {
+    result as List<Object?>;
+    return GenerationOptionsRequest(
+      temperature: result[0] as double?,
+      maximumResponseTokens: result[1] as int?,
+      samplingTopK: result[2] as int?,
+      samplingProbabilityThreshold: result[3] as double?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! GenerationOptionsRequest || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
+}
+
+/// Data class for chat request tied to a session
+class ChatRequest {
+  ChatRequest({
+    required this.sessionId,
+    required this.prompt,
+    this.options,
+  });
+
+  String sessionId;
+
+  String prompt;
+
+  GenerationOptionsRequest? options;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      sessionId,
+      prompt,
+      options?.encode(),
+    ];
+  }
+
+  Object encode() {
+    return _toList();
+  }
 
   static ChatRequest decode(Object result) {
     result as List<Object?>;
     return ChatRequest(
-      prompt: result[0]! as String,
+      sessionId: result[0]! as String,
+      prompt: result[1]! as String,
+      options: result[2] != null
+          ? GenerationOptionsRequest.decode(result[2]! as List<Object?>)
+          : null,
     );
   }
 
@@ -67,36 +136,161 @@ class ChatRequest {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
+}
+
+class ChatStreamRequest {
+  ChatStreamRequest({
+    required this.streamId,
+    required this.sessionId,
+    required this.prompt,
+    this.options,
+  });
+
+  String streamId;
+
+  String sessionId;
+
+  String prompt;
+
+  GenerationOptionsRequest? options;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      streamId,
+      sessionId,
+      prompt,
+      options?.encode(),
+    ];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static ChatStreamRequest decode(Object result) {
+    result as List<Object?>;
+    return ChatStreamRequest(
+      streamId: result[0]! as String,
+      sessionId: result[1]! as String,
+      prompt: result[2]! as String,
+      options: result[3] != null
+          ? GenerationOptionsRequest.decode(result[3]! as List<Object?>)
+          : null,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! ChatStreamRequest || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  int get hashCode => Object.hashAll(_toList());
+}
+
+class TranscriptEntry {
+  TranscriptEntry({
+    required this.id,
+    required this.role,
+    required this.content,
+    this.segments,
+  });
+
+  String id;
+
+  String role;
+
+  String content;
+
+  List<String>? segments;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      id,
+      role,
+      content,
+      segments,
+    ];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static TranscriptEntry decode(Object result) {
+    result as List<Object?>;
+    return TranscriptEntry(
+      id: result[0]! as String,
+      role: result[1]! as String,
+      content: result[2]! as String,
+      segments: (result[3] as List<Object?>?)?.cast<String>(),
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! TranscriptEntry || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
 }
 
 /// Data class for chat response
 class ChatResponse {
   ChatResponse({
     required this.content,
+    this.rawContent,
+    this.transcriptEntries,
     this.errorMessage,
   });
 
   String content;
+
+  String? rawContent;
+
+  List<TranscriptEntry?>? transcriptEntries;
 
   String? errorMessage;
 
   List<Object?> _toList() {
     return <Object?>[
       content,
+      rawContent,
+      transcriptEntries?.map((TranscriptEntry? e) => e?.encode()).toList(),
       errorMessage,
     ];
   }
 
   Object encode() {
-    return _toList();  }
+    return _toList();
+  }
 
   static ChatResponse decode(Object result) {
     result as List<Object?>;
     return ChatResponse(
       content: result[0]! as String,
-      errorMessage: result[1] as String?,
+      rawContent: result[1] as String?,
+      transcriptEntries: (result[2] as List<Object?>?)?.map((Object? e) => e != null
+              ? TranscriptEntry.decode(e as List<Object?>)
+              : null)
+          .toList(),
+      errorMessage: result[3] as String?,
     );
   }
 
@@ -114,8 +308,58 @@ class ChatResponse {
 
   @override
   // ignore: avoid_equals_and_hash_code_on_mutable_classes
-  int get hashCode => Object.hashAll(_toList())
-;
+  int get hashCode => Object.hashAll(_toList());
+}
+
+class SessionRequest {
+  SessionRequest({
+    required this.sessionId,
+    this.instructions,
+    this.guardrailLevel,
+  });
+
+  String sessionId;
+
+  String? instructions;
+
+  String? guardrailLevel;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      sessionId,
+      instructions,
+      guardrailLevel,
+    ];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static SessionRequest decode(Object result) {
+    result as List<Object?>;
+    return SessionRequest(
+      sessionId: result[0]! as String,
+      instructions: result[1] as String?,
+      guardrailLevel: result[2] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! SessionRequest || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
 }
 
 /// Data class for availability check response
@@ -123,6 +367,7 @@ class AvailabilityResponse {
   AvailabilityResponse({
     required this.isAvailable,
     required this.osVersion,
+    this.reasonCode,
     this.errorMessage,
   });
 
@@ -130,12 +375,15 @@ class AvailabilityResponse {
 
   String osVersion;
 
+  String? reasonCode;
+
   String? errorMessage;
 
   List<Object?> _toList() {
     return <Object?>[
       isAvailable,
       osVersion,
+      reasonCode,
       errorMessage,
     ];
   }
@@ -148,7 +396,8 @@ class AvailabilityResponse {
     return AvailabilityResponse(
       isAvailable: result[0]! as bool,
       osVersion: result[1]! as String,
-      errorMessage: result[2] as String?,
+      reasonCode: result[2] as String?,
+      errorMessage: result[3] as String?,
     );
   }
 
@@ -175,17 +424,26 @@ class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
-    if (value is int) {
-      buffer.putUint8(4);
-      buffer.putInt64(value);
-    }    else if (value is ChatRequest) {
+    if (value is GenerationOptionsRequest) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    }    else if (value is ChatResponse) {
+    } else if (value is ChatRequest) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    }    else if (value is AvailabilityResponse) {
+    } else if (value is ChatStreamRequest) {
       buffer.putUint8(131);
+      writeValue(buffer, value.encode());
+    } else if (value is TranscriptEntry) {
+      buffer.putUint8(132);
+      writeValue(buffer, value.encode());
+    } else if (value is ChatResponse) {
+      buffer.putUint8(133);
+      writeValue(buffer, value.encode());
+    } else if (value is SessionRequest) {
+      buffer.putUint8(134);
+      writeValue(buffer, value.encode());
+    } else if (value is AvailabilityResponse) {
+      buffer.putUint8(135);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -195,11 +453,19 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129: 
+      case 129:
+        return GenerationOptionsRequest.decode(readValue(buffer)!);
+      case 130:
         return ChatRequest.decode(readValue(buffer)!);
-      case 130: 
+      case 131:
+        return ChatStreamRequest.decode(readValue(buffer)!);
+      case 132:
+        return TranscriptEntry.decode(readValue(buffer)!);
+      case 133:
         return ChatResponse.decode(readValue(buffer)!);
-      case 131: 
+      case 134:
+        return SessionRequest.decode(readValue(buffer)!);
+      case 135:
         return AvailabilityResponse.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -250,9 +516,63 @@ class FoundationModelsApi {
     }
   }
 
-  /// Create a new language model session and send a prompt
-  Future<ChatResponse> sendPrompt(ChatRequest request) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.sendPrompt$pigeonVar_messageChannelSuffix';
+  /// Create or update a session on the host platform
+  Future<void> createSession(SessionRequest request) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.createSession$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[request]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] != null) {
+      throw PlatformException(
+        code: 'non-null-void-return',
+        message: 'Host platform returned non-null value for void return value.',
+      );
+    }
+  }
+
+  /// Prewarm an existing session to improve latency
+  Future<void> prewarmSession(String sessionId) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.prewarmSession$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[sessionId]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] != null) {
+      throw PlatformException(
+        code: 'non-null-void-return',
+        message: 'Host platform returned non-null value for void return value.',
+      );
+    }
+  }
+
+  /// Send a prompt to an existing session and receive a structured response
+  Future<ChatResponse> sendPromptToSession(ChatRequest request) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.sendPromptToSession$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -276,6 +596,87 @@ class FoundationModelsApi {
       );
     } else {
       return (pigeonVar_replyList[0] as ChatResponse?)!;
+    }
+  }
+
+  /// Dispose of a session on the host platform
+  Future<void> disposeSession(String sessionId) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.disposeSession$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[sessionId]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] != null) {
+      throw PlatformException(
+        code: 'non-null-void-return',
+        message: 'Host platform returned non-null value for void return value.',
+      );
+    }
+  }
+
+  /// Start a streaming response for a prompt using an existing session
+  Future<void> startStream(ChatStreamRequest request) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.startStream$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[request]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] != null) {
+      throw PlatformException(
+        code: 'non-null-void-return',
+        message: 'Host platform returned non-null value for void return value.',
+      );
+    }
+  }
+
+  /// Cancel an active streaming response
+  Future<void> stopStream(String streamId) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.stopStream$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[streamId]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] != null) {
+      throw PlatformException(
+        code: 'non-null-void-return',
+        message: 'Host platform returned non-null value for void return value.',
+      );
     }
   }
 }
