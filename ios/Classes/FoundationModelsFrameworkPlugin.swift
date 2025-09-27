@@ -10,8 +10,15 @@ import AppKit
 
 @objc public class SwiftFoundationModelsFrameworkPlugin: NSObject, FlutterPlugin, FoundationModelsApi {
 
+    private var _sessionManager: Any?
+
     @available(iOS 26.0, macOS 15.0, *)
-    private let sessionManager = SessionManager()
+    private var sessionManager: SessionManager {
+        if _sessionManager == nil {
+            _sessionManager = SessionManager()
+        }
+        return _sessionManager as! SessionManager
+    }
 
     private var eventSink: FlutterEventSink?
     private var streamTasks: [String: Task<Void, Never>] = [:]
@@ -231,7 +238,8 @@ import AppKit
                 let options = makeGenerationOptions(from: request.options)
 
                 let task = Task { [weak self] in
-                    await self?.runStream(
+                    guard let self else { return }
+                    await self.runStream(
                         streamId: streamId,
                         session: session,
                         prompt: request.prompt,
