@@ -1,3 +1,60 @@
+## 0.2.0
+
+**MAJOR UPDATE**: Complete implementation overhaul with proper Apple Foundation Models API compliance, cross-platform support, streaming capabilities, and enhanced features.
+
+### 🎉 New Features
+- **Streaming Support**: Real-time token streaming with delta updates and cancellation support
+- **macOS Support**: Full macOS 15.0+ platform support alongside iOS 26.0+
+- **Persistent Sessions**: Proper session lifecycle management with transcript history
+- **Generation Options**: Control temperature, token limits, and sampling strategies
+- **Guardrail Levels**: Configure content safety (strict/standard/permissive)
+- **Session Instructions**: Provide system-level instructions for behavior guidance
+- **Rich Responses**: Access raw content, transcript entries, and structured metadata
+- **Session Pre-warming**: Reduce first-token latency with `prewarm()` method
+- **Resource Management**: Proper session disposal with `dispose()` method
+
+### 🔧 API Improvements
+- **Session Management**: Sessions now persist across multiple interactions
+- **Error Handling**: Structured error codes and sanitized error messages
+- **Security**: Built-in prompt validation and injection protection
+- **Performance**: Session reuse instead of recreation per request
+- **Type Safety**: Enhanced Pigeon schema with new data classes
+
+### 🐛 Bug Fixes
+- Fixed incorrect `LanguageModelSession()` instantiation
+- Updated availability enum to match Apple's final API
+- Corrected response method signatures
+- Fixed session lifecycle issues causing performance degradation
+- Resolved memory management concerns
+
+### 🛠 Technical Changes
+- Implemented native streaming with EventChannel for real-time token delivery
+- Unified iOS/macOS implementation with platform conditionals
+- Added `SessionManager` for proper resource management
+- Implemented `SecurityManager` for prompt validation
+- Updated to use correct `SystemLanguageModel.Availability.UnavailableReason` enum
+- Added proper generation options mapping
+- Implemented transcript entry serialization with segments
+- Thread-safe streaming with proper task cancellation and cleanup
+
+### 📱 Platform Updates
+- iOS: 26.0+ (unchanged)
+- macOS: 15.0+ (new)
+- Both platforms use unified Swift implementation
+
+### 📚 Documentation
+- Updated README with new API features
+- Added generation options examples
+- Documented guardrail levels
+- Enhanced API reference with all new methods
+- Added cross-platform setup instructions
+
+### ⚠️ Known Limitations
+- Structured generation (`@Generable`) not yet supported
+- Tool/function calling not available
+- Requires physical device with Apple Intelligence enabled
+- iOS version numbers are placeholders pending Apple's final release
+
 ## 0.1.0
 
 **BREAKING CHANGES**: Complete API redesign to focus on session-based Foundation Models framework.

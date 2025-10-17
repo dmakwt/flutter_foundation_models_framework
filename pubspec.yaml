@@ -1,6 +1,6 @@
 name: foundation_models_framework
-description: A Flutter package for integrating with Apple's Foundation Models framework on iOS devices. Provides session-based language model interactions and Apple Intelligence features.
-version: 0.1.0
+description: A Flutter package for integrating with Apple's Foundation Models framework on iOS and macOS devices. Provides session-based language model interactions with Apple Intelligence features.
+version: 0.2.0
 homepage: https://github.com/dmakwt/flutter_foundation_models_framework
 repository: https://github.com/dmakwt/flutter_foundation_models_framework
 issue_tracker: https://github.com/dmakwt/flutter_foundation_models_framework/issues
@@ -12,6 +12,7 @@ topics:
   - language-models
   - sessions
   - ios
+  - macos
 
 environment:
   sdk: ^3.8.1
@@ -39,6 +40,9 @@ flutter:
         language: swift
         pluginClass: FoundationModelsFrameworkPlugin
         fileName: foundation_models_framework
+      macos:
+        source: 'macos'
+        pluginClass: SwiftFoundationModelsFrameworkPlugin
 
   # To add assets to your package, add an assets section, like this:
   # assets:

@@ -128,70 +128,236 @@ func deepHashFoundationModelsApi(value: Any?, hasher: inout Hasher) {
 
     
 
-/// Data class for chat request
-///
-/// Generated class from Pigeon that represents data sent in messages.
-struct ChatRequest: Hashable {
-  var prompt: String
+struct GenerationOptionsRequest: Hashable {
+  var temperature: Double? = nil
+  var maximumResponseTokens: Int64? = nil
+  var samplingTopK: Int64? = nil
+  var samplingProbabilityThreshold: Double? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> ChatRequest? {
-    let prompt = pigeonVar_list[0] as! String
+  static func fromList(_ pigeonVar_list: [Any?]) -> GenerationOptionsRequest? {
+    let temperature: Double? = nilOrValue(pigeonVar_list[0])
+    let maximumResponseTokens: Int64? = nilOrValue(pigeonVar_list[1])
+    let samplingTopK: Int64? = nilOrValue(pigeonVar_list[2])
+    let samplingProbabilityThreshold: Double? = nilOrValue(pigeonVar_list[3])
 
-    return ChatRequest(
-      prompt: prompt
+    return GenerationOptionsRequest(
+      temperature: temperature,
+      maximumResponseTokens: maximumResponseTokens,
+      samplingTopK: samplingTopK,
+      samplingProbabilityThreshold: samplingProbabilityThreshold
     )
   }
   func toList() -> [Any?] {
     return [
-      prompt
+      temperature,
+      maximumResponseTokens,
+      samplingTopK,
+      samplingProbabilityThreshold,
     ]
   }
-  static func == (lhs: ChatRequest, rhs: ChatRequest) -> Bool {
-    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())  }
+  static func == (lhs: GenerationOptionsRequest, rhs: GenerationOptionsRequest) -> Bool {
+    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())
+  }
   func hash(into hasher: inout Hasher) {
     deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
   }
 }
 
-/// Data class for chat response
-///
-/// Generated class from Pigeon that represents data sent in messages.
+struct ChatRequest: Hashable {
+  var sessionId: String
+  var prompt: String
+  var options: GenerationOptionsRequest? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ChatRequest? {
+    let sessionId = pigeonVar_list[0] as! String
+    let prompt = pigeonVar_list[1] as! String
+    var options: GenerationOptionsRequest? = nil
+    if let optionsList = pigeonVar_list[2] as? [Any?] {
+      options = GenerationOptionsRequest.fromList(optionsList)
+    }
+
+    return ChatRequest(
+      sessionId: sessionId,
+      prompt: prompt,
+      options: options
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      sessionId,
+      prompt,
+      options?.toList(),
+    ]
+  }
+  static func == (lhs: ChatRequest, rhs: ChatRequest) -> Bool {
+    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())
+  }
+  func hash(into hasher: inout Hasher) {
+    deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
+  }
+}
+
+struct ChatStreamRequest: Hashable {
+  var streamId: String
+  var sessionId: String
+  var prompt: String
+  var options: GenerationOptionsRequest? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ChatStreamRequest? {
+    let streamId = pigeonVar_list[0] as! String
+    let sessionId = pigeonVar_list[1] as! String
+    let prompt = pigeonVar_list[2] as! String
+    var options: GenerationOptionsRequest? = nil
+    if let optionsList = pigeonVar_list[3] as? [Any?] {
+      options = GenerationOptionsRequest.fromList(optionsList)
+    }
+
+    return ChatStreamRequest(
+      streamId: streamId,
+      sessionId: sessionId,
+      prompt: prompt,
+      options: options
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      streamId,
+      sessionId,
+      prompt,
+      options?.toList(),
+    ]
+  }
+  static func == (lhs: ChatStreamRequest, rhs: ChatStreamRequest) -> Bool {
+    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())
+  }
+  func hash(into hasher: inout Hasher) {
+    deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
+  }
+}
+
+struct TranscriptEntry: Hashable {
+  var id: String
+  var role: String
+  var content: String
+  var segments: [String]? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> TranscriptEntry? {
+    let id = pigeonVar_list[0] as! String
+    let role = pigeonVar_list[1] as! String
+    let content = pigeonVar_list[2] as! String
+    let segments: [String]? = nilOrValue(pigeonVar_list[3])
+
+    return TranscriptEntry(
+      id: id,
+      role: role,
+      content: content,
+      segments: segments
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      id,
+      role,
+      content,
+      segments,
+    ]
+  }
+  static func == (lhs: TranscriptEntry, rhs: TranscriptEntry) -> Bool {
+    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())
+  }
+  func hash(into hasher: inout Hasher) {
+    deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
+  }
+}
+
 struct ChatResponse: Hashable {
   var content: String
+  var rawContent: String? = nil
+  var transcriptEntries: [TranscriptEntry?]? = nil
   var errorMessage: String? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> ChatResponse? {
     let content = pigeonVar_list[0] as! String
-    let errorMessage: String? = nilOrValue(pigeonVar_list[1])
+    let rawContent: String? = nilOrValue(pigeonVar_list[1])
+    var transcriptEntries: [TranscriptEntry?]? = nil
+    if let entriesList = pigeonVar_list[2] as? [Any?] {
+      transcriptEntries = entriesList.map { value in
+        guard let entryList = value as? [Any?] else { return nil }
+        return TranscriptEntry.fromList(entryList)
+      }
+    }
+    let errorMessage: String? = nilOrValue(pigeonVar_list[3])
 
     return ChatResponse(
       content: content,
+      rawContent: rawContent,
+      transcriptEntries: transcriptEntries,
       errorMessage: errorMessage
     )
   }
   func toList() -> [Any?] {
     return [
       content,
+      rawContent,
+      transcriptEntries?.map { $0?.toList() },
       errorMessage,
     ]
   }
   static func == (lhs: ChatResponse, rhs: ChatResponse) -> Bool {
-    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())  }
+    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())
+  }
   func hash(into hasher: inout Hasher) {
     deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
   }
 }
 
-/// Data class for availability check response
-///
-/// Generated class from Pigeon that represents data sent in messages.
+struct SessionRequest: Hashable {
+  var sessionId: String
+  var instructions: String? = nil
+  var guardrailLevel: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> SessionRequest? {
+    let sessionId = pigeonVar_list[0] as! String
+    let instructions: String? = nilOrValue(pigeonVar_list[1])
+    let guardrailLevel: String? = nilOrValue(pigeonVar_list[2])
+
+    return SessionRequest(
+      sessionId: sessionId,
+      instructions: instructions,
+      guardrailLevel: guardrailLevel
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      sessionId,
+      instructions,
+      guardrailLevel,
+    ]
+  }
+  static func == (lhs: SessionRequest, rhs: SessionRequest) -> Bool {
+    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())
+  }
+  func hash(into hasher: inout Hasher) {
+    deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
+  }
+}
+
 struct AvailabilityResponse: Hashable {
   var isAvailable: Bool
   var osVersion: String
+  var reasonCode: String? = nil
   var errorMessage: String? = nil
 
 
@@ -199,11 +365,13 @@ struct AvailabilityResponse: Hashable {
   static func fromList(_ pigeonVar_list: [Any?]) -> AvailabilityResponse? {
     let isAvailable = pigeonVar_list[0] as! Bool
     let osVersion = pigeonVar_list[1] as! String
-    let errorMessage: String? = nilOrValue(pigeonVar_list[2])
+    let reasonCode: String? = nilOrValue(pigeonVar_list[2])
+    let errorMessage: String? = nilOrValue(pigeonVar_list[3])
 
     return AvailabilityResponse(
       isAvailable: isAvailable,
       osVersion: osVersion,
+      reasonCode: reasonCode,
       errorMessage: errorMessage
     )
   }
@@ -211,11 +379,13 @@ struct AvailabilityResponse: Hashable {
     return [
       isAvailable,
       osVersion,
+      reasonCode,
       errorMessage,
     ]
   }
   static func == (lhs: AvailabilityResponse, rhs: AvailabilityResponse) -> Bool {
-    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())  }
+    return deepEqualsFoundationModelsApi(lhs.toList(), rhs.toList())
+  }
   func hash(into hasher: inout Hasher) {
     deepHashFoundationModelsApi(value: toList(), hasher: &hasher)
   }
@@ -225,10 +395,18 @@ private class FoundationModelsApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
-      return ChatRequest.fromList(self.readValue() as! [Any?])
+      return GenerationOptionsRequest.fromList(self.readValue() as! [Any?])
     case 130:
-      return ChatResponse.fromList(self.readValue() as! [Any?])
+      return ChatRequest.fromList(self.readValue() as! [Any?])
     case 131:
+      return ChatStreamRequest.fromList(self.readValue() as! [Any?])
+    case 132:
+      return TranscriptEntry.fromList(self.readValue() as! [Any?])
+    case 133:
+      return ChatResponse.fromList(self.readValue() as! [Any?])
+    case 134:
+      return SessionRequest.fromList(self.readValue() as! [Any?])
+    case 135:
       return AvailabilityResponse.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -238,14 +416,26 @@ private class FoundationModelsApiPigeonCodecReader: FlutterStandardReader {
 
 private class FoundationModelsApiPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? ChatRequest {
+    if let value = value as? GenerationOptionsRequest {
       super.writeByte(129)
       super.writeValue(value.toList())
-    } else if let value = value as? ChatResponse {
+    } else if let value = value as? ChatRequest {
       super.writeByte(130)
       super.writeValue(value.toList())
-    } else if let value = value as? AvailabilityResponse {
+    } else if let value = value as? ChatStreamRequest {
       super.writeByte(131)
+      super.writeValue(value.toList())
+    } else if let value = value as? TranscriptEntry {
+      super.writeByte(132)
+      super.writeValue(value.toList())
+    } else if let value = value as? ChatResponse {
+      super.writeByte(133)
+      super.writeValue(value.toList())
+    } else if let value = value as? SessionRequest {
+      super.writeByte(134)
+      super.writeValue(value.toList())
+    } else if let value = value as? AvailabilityResponse {
+      super.writeByte(135)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -274,8 +464,18 @@ class FoundationModelsApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Se
 protocol FoundationModelsApi {
   /// Check if Foundation Models framework is available on the device
   func checkAvailability(completion: @escaping (Result<AvailabilityResponse, Error>) -> Void)
-  /// Create a new language model session and send a prompt
-  func sendPrompt(request: ChatRequest, completion: @escaping (Result<ChatResponse, Error>) -> Void)
+  /// Create or update a session on the host platform
+  func createSession(request: SessionRequest, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Prewarm a session to reduce first-token latency
+  func prewarmSession(sessionId: String, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Send a prompt to an existing session and receive structured response data
+  func sendPromptToSession(request: ChatRequest, completion: @escaping (Result<ChatResponse, Error>) -> Void)
+  /// Dispose of session resources held on the host platform
+  func disposeSession(sessionId: String, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Start a streaming response for a prompt using an existing session
+  func startStream(request: ChatStreamRequest, completion: @escaping (Result<Void, Error>) -> Void)
+  /// Cancel an active streaming response
+  func stopStream(streamId: String, completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -300,13 +500,49 @@ class FoundationModelsApiSetup {
     } else {
       checkAvailabilityChannel.setMessageHandler(nil)
     }
-    /// Create a new language model session and send a prompt
-    let sendPromptChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.sendPrompt\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Create or update a session on the host platform
+    let createSessionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.createSession\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      sendPromptChannel.setMessageHandler { message, reply in
+      createSessionChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let requestArg = args[0] as! SessionRequest
+        api.createSession(request: requestArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      createSessionChannel.setMessageHandler(nil)
+    }
+    /// Prewarm a session to reduce first-token latency
+    let prewarmSessionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.prewarmSession\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      prewarmSessionChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let sessionIdArg = args[0] as! String
+        api.prewarmSession(sessionId: sessionIdArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      prewarmSessionChannel.setMessageHandler(nil)
+    }
+    /// Send a prompt to an existing session and receive structured response data
+    let sendPromptToSessionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.sendPromptToSession\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      sendPromptToSessionChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let requestArg = args[0] as! ChatRequest
-        api.sendPrompt(request: requestArg) { result in
+        api.sendPromptToSession(request: requestArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -316,7 +552,61 @@ class FoundationModelsApiSetup {
         }
       }
     } else {
-      sendPromptChannel.setMessageHandler(nil)
+      sendPromptToSessionChannel.setMessageHandler(nil)
+    }
+    /// Dispose of session resources held on the host platform
+    let disposeSessionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.disposeSession\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      disposeSessionChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let sessionIdArg = args[0] as! String
+        api.disposeSession(sessionId: sessionIdArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      disposeSessionChannel.setMessageHandler(nil)
+    }
+    /// Start a streaming response for a prompt using an existing session
+    let startStreamChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.startStream\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startStreamChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let requestArg = args[0] as! ChatStreamRequest
+        api.startStream(request: requestArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startStreamChannel.setMessageHandler(nil)
+    }
+    /// Cancel an active streaming response
+    let stopStreamChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foundation_models_framework.FoundationModelsApi.stopStream\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      stopStreamChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let streamIdArg = args[0] as! String
+        api.stopStream(streamId: streamIdArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      stopStreamChannel.setMessageHandler(nil)
     }
   }
 }
